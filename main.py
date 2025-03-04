@@ -2,9 +2,25 @@ from bs4 import BeautifulSoup
 import requests
 from export import export_to_excel
 import re
+from analyse import analyse_film_data
+
+
 
 base_url = "https://www.allocine.fr/film/meilleurs/?page={}"
 films_data = []
+
+def convert_duration_to_minutes(duration_text):
+    """Convertit une durée '2h 30min' en minutes (ex : 150)."""
+    if not duration_text:
+        return None
+    
+    hours_match = re.search(r'(\d+)h', duration_text)
+    minutes_match = re.search(r'(\d+)min', duration_text)
+
+    hours = int(hours_match.group(1)) if hours_match else 0
+    minutes = int(minutes_match.group(1)) if minutes_match else 0
+
+    return hours * 60 + minutes
 
 try:    
     for page in range(1, 31):
@@ -43,11 +59,13 @@ try:
             meta_body = movie.find('div', class_="meta-body")
             last_div = meta_body.find('div', class_="meta-body-item meta-body-info") if meta_body else None
             if last_div:
-                duration_text = last_div.text.strip()
-                duration_parts = duration_text.split("|")
-                duration = duration_parts[0].strip() if duration_parts else "Durée inconnue"
+                duration_text = last_div.text.strip().split("|")[0].strip()
+                duration = convert_duration_to_minutes(duration_text)
             else:
-                duration = "Durée inconnue"
+                duration = None
+
+            rating_div = movie.find('span', class_="stareval-note")
+            rating = float(rating_div.text.replace(',', '.').strip()) if rating_div else None
 
 
             rating_div = movie.find('span', class_="stareval-note")
@@ -61,9 +79,10 @@ try:
             else:
                 author = "Auteur inconnu"
 
-            films_data.append([rank, title_text, author, categories, "Année inconnue", duration, rating])
+            films_data.append([rank, title_text, author, categories, duration, rating])
 
 except Exception as e:
     print(f"❌ Erreur : {e}")
 
 export_to_excel(films_data)
+analyse_film_data()
