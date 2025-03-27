@@ -21,7 +21,7 @@ Ce projet extrait automatiquement les **meilleurs films sur AlloCiné** et les e
 ## 🛠️ Installation
 ### **1️⃣ Cloner le projet**
 ```bash
-git clone https://github.com/TON-PROFIL/scraping-allocine.git
+git clone https://github.com/kumulus26/scraping-allocine.git
 cd scraping-allocine
 
 ### **2️⃣ Installer les dépendances**
